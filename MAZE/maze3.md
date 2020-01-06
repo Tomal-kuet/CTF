@@ -62,9 +62,139 @@
  
 ```
 
-C program:
+
+
+This problem we need to examine the sequential execution one by one.
+
+The l1 step by step execution continues from the _start function to fine function**.** 
+
+**fine:** what fine does in basically calls the *mprotect(0x8048000, 151, PROT_READ|PROT_WRITE|PROT_EXEC)* by int $0x80 syscall which point to mprotect
+
+​	mprotect changes the access permission and sets the read write and execute permission starting from address  0x8048000 untill 151 byes. set break point at  0x80480b1. Examine the register values to check the address in ebx is the starting address and the value in ecx the length. The registers value are given below: info reg
+
+```assembly
+eax            0x7d	125
+ecx            0x97	151
+edx            0x7	7
+ebx            0x8048000	134512640
+esp            0xffffd768	0xffffd768
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x80480b1	0x80480b1 <fine+27>
+eflags         0x206	[ PF IF ]
+cs             0x23	35
+ss             0x2b	43
+ds             0x2b	43
+es             0x2b	43
+fs             0x0	0
+gs             0x0	0
 
 ```
 
+
+
+After the fine function execute it goes to the l1 function because there is no jump. There for sequential execution goes to the l1.  examine the l1 function execution. It loops over lods, xor and stos instructions. Interesting thing to note that in changes the code in d1() function check the code in d1 after each. Set break point at the starting of the l1() function. and check the register values.
+
+```assembly
+eax            0x0	0
+ecx            0x2c	44
+edx            0x12345678	305419896
+ebx            0x8048000	134512640
+esp            0xffffd768	0xffffd768
+ebp            0x0	0x0
+esi            0x80480cb	134512843
+edi            0x80480cb	134512843
+eip            0x80480c5	0x80480c5 <l1>
+eflags         0x206	[ PF IF ]
+cs             0x23	35
+ss             0x2b	43
+ds             0x2b	43
+es             0x2b	43
+fs             0x0	0
+gs             0x0	0
+
 ```
+
+at this point l1() takes  44*4 = 176 steps to change the code on d1(). then continues to the d1 function.
+
+**Manipulated code of d1:**
+
+```assembly
+(gdb) stepi 176
+0x080480cb in d1 ()
+```
+
+```assembly
+(gdb) disas d1
+Dump of assembler code for function d1:
+=> 0x080480cb <+0>:	pop    %eax
+   0x080480cc <+1>:	cmpl   $0x1337c0de,(%eax)
+   0x080480d2 <+7>:	jne    0x80480ed <d1+34>
+   0x080480d4 <+9>:	xor    %eax,%eax
+   0x080480d6 <+11>:	push   %eax
+   0x080480d7 <+12>:	push   $0x68732f2f
+   0x080480dc <+17>:	push   $0x6e69622f
+   0x080480e1 <+22>:	mov    %esp,%ebx
+   0x080480e3 <+24>:	push   %eax
+   0x080480e4 <+25>:	push   %ebx
+   0x080480e5 <+26>:	mov    %esp,%ecx
+   0x080480e7 <+28>:	xor    %edx,%edx
+   0x080480e9 <+30>:	mov    $0xb,%al
+   0x080480eb <+32>:	int    $0x80
+   0x080480ed <+34>:	mov    $0x1,%eax
+   0x080480f2 <+39>:	xor    %ebx,%ebx
+   0x080480f4 <+41>:	inc    %ebx
+   0x080480f5 <+42>:	int    $0x80
+End of assembler dump.
+
+```
+
+**This looks like a shell code.**
+
+
+
+Now examine the d1+1 line cmpl instruction. set a break point there and check the eax value, which turns out to be our given argument to the elf file maze3.
+
+```assembly
+(gdb) info reg
+eax            0xffffd8a8	-10072
+ecx            0x0	0
+edx            0x12345678	305419896
+ebx            0x8048000	134512640
+esp            0xffffd76c	0xffffd76c
+ebp            0x0	0x0
+esi            0x804817b	134513019
+edi            0x804817b	134513019
+eip            0x80480cc	0x80480cc <d1+1>
+eflags         0x206	[ PF IF ]
+cs             0x23	35
+ss             0x2b	43
+ds             0x2b	43
+es             0x2b	43
+fs             0x0	0
+gs             0x0	0
+
+```
+
+Check the content of eax which is compared to fixed value 0x1337c0de.
+
+```assembly
+(gdb) x/s 0xffffd8a8
+0xffffd8a8:	"AAAA"
+
+```
+
+There for we can see the in the value matches the fixed value it gives us the shell. which is all we need.
+
+Now execute the binary with the parameter of the fixed value to solve this step and get the password for next label.
+
+```
+maze3@maze:/maze$ ./maze3 $(python -c 'print "\xde\xc0\x37\x13"')
+$ cat /etc/maze_pass/maze4
+deekaihiek
+
+```
+
+**Password: ** deekaihiek
 
