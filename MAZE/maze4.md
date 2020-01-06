@@ -281,7 +281,7 @@ lets check the disassembly code.
    0x08048722 <+295>:	ret    
 ```
 
-Debug the main function sequentially. You  will see interesting things from address 0x08048684. 
+Debug the main function sequentially. You  will see interesting things from address 0x08048684.  First it pushes the parameter for read x34 is 52. 
 
 (python -c 'print "ABCDEFG"+"\x01\x01"+"JKLMNOPQRSTUVWXYZab"+"\x20\x00\x00\x00"+"cdefghijklmn"+"\x01\x00\x00\x00"+"stuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"+"Z"*100') >temp
 
